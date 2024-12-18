@@ -8,7 +8,8 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - database
+      - postgres
+      - redis
     volumes:
       - ./users_events_service:/usr/src/app
       - ./users_events_service/node_modules:/usr/src/app/node_modules
@@ -28,8 +29,8 @@ services:
     networks:
       - internal
 
-  database:
-    image: postgres:14
+  postgres:
+    image: postgres:10
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -38,16 +39,26 @@ services:
     env_file:
       - .env
     ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+      - 5433:5432
     volumes:
       - database_data:/var/lib/postgresql/data
-      - ./dbscripts/postgres:/docker-entrypoint-initdb.d
     networks:
       - internal
 
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - ${REDIS_PORT}:6379
+    restart: always
+    networks:
+      - internal
+    volumes:  
+      - cache_data:/data  
 
 networks:
   internal:
+    driver: bridge
 
 volumes:
   database_data:
+  cache_data:
