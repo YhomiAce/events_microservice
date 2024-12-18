@@ -11,6 +11,7 @@ import {
 import BaseEntity from './base.entity';
 import * as bcrypt from 'bcryptjs';
 import { Exclude } from 'class-transformer';
+import { EventEntity } from './event.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -33,6 +34,9 @@ export class User extends BaseEntity {
   @Exclude()
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @OneToMany(() => EventEntity, (event) => event.createdBy)
+  events: EventEntity[];
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { EventModule } from './modules/event/event.module';
 import configuration from './config/configuration';
 import AppCacheModule from './config/cache';
 
@@ -27,6 +28,7 @@ import AppCacheModule from './config/cache';
     AppCacheModule,
     UserModule,
     AuthModule,
+    EventModule,
   ],
   providers: [],
 })
