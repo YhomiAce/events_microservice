@@ -6,7 +6,6 @@ export class WelcomeEmailDto {
     toEmail: string;
 
     @IsString()
-    @IsString()
     @IsNotEmpty()
     name: string;
 }

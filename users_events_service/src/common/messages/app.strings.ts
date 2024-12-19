@@ -10,4 +10,8 @@ export const AppStrings = {
   INVALID_EMAIL_OR_PASSWORD: "Invalid credentials",
   WRONG_REFRESH_TOKEN: 'Refresh Token is Wrong',
   EVENT_CREATED: 'Event created successfully',
+  JOIN_EVENT_REQUEST: 'Request sent successfully',
+  REQUEST_EXIST: 'You already have a Request for this Event',
+  FORBIDDEN_RESOURCE: 'Forbidden Resource',
+  REQUEST_ACTION: (action: string) => `Event request ${action}`,
 };

@@ -1,24 +1,30 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { EventRepository } from '../repository';
-import { CreateEventDto } from '../dtos';
-import { EventEntity, User } from 'src/entities';
 import {
-  DeepPartial,
-  FindOptionsWhere,
-  ILike,
-  LessThanOrEqual,
-  MoreThanOrEqual,
-} from 'typeorm';
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import { EventRepository, EventRequestRepository } from '../repository';
+import { CreateEventDto, EventRequestDto, RequestDecisionDto } from '../dtos';
+import { EventEntity, EventRequest, User } from 'src/entities';
+import { DeepPartial, FindOptionsWhere, ILike, MoreThanOrEqual } from 'typeorm';
 import { EventQueryDto } from '../dtos/list-event.dto';
 import { Pagination } from 'src/common/utils/pagination';
 import { PaginatedEventListResponse } from 'src/common/responses/event-list.response';
 import { ClientProxy } from '@nestjs/microservices';
 import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
+import { AppStrings } from 'src/common/messages/app.strings';
+import {
+  SEND_JOIN_REQUEST,
+  SEND_JOIN_REQUEST_RESPONSE,
+} from 'src/config/events';
+import { RequestStatus } from 'src/common/enums';
 
 @Injectable()
 export class EventService {
   constructor(
     private readonly eventRepository: EventRepository,
+    private readonly eventRequestRepository: EventRequestRepository,
     @Inject(NOTIFICATIONS_SERVICE)
     private readonly notificationService: ClientProxy,
   ) {}
@@ -46,7 +52,7 @@ export class EventService {
     this.notificationService.emit('SEND_JOIN_REQUEST', {
       eventTitle: event.title,
       // requesterName: "Yhomi Ace",
-      toEmail: "kareemyomi91@gmail.com",
+      toEmail: 'kareemyomi91@gmail.com',
     });
     return event;
   }
@@ -103,5 +109,106 @@ export class EventService {
     return new Pagination(results, query?.page, query?.pageSize).paginate(
       total,
     );
+  }
+
+  /**
+   * Request to Join Event
+   *
+   * @async
+   * @param {User} user
+   * @param {EventRequestDto} data
+   * @returns {Promise<void>}
+   */
+  async joinEventRequest(user: User, data: EventRequestDto): Promise<void> {
+    const { eventId } = data;
+    const event = await this.eventRepository.findByIdOrFail(eventId, [
+      'createdBy',
+    ]);
+    const requestExist = await this.eventRequestRepository.findOne({
+      where: {
+        user: {
+          id: user.id,
+        },
+        event: {
+          id: eventId,
+        },
+      },
+    });
+    if (requestExist) {
+      throw new BadRequestException(AppStrings.REQUEST_EXIST);
+    }
+    await this.eventRequestRepository.create({
+      event,
+      user,
+    });
+
+    // Notify the event creator via the Email Notification Service about new join requests.
+    this.notificationService.emit(SEND_JOIN_REQUEST, {
+      eventTitle: event.title,
+      requesterName: user.fullName,
+      email: event.createdBy.email,
+      name: event.createdBy.fullName,
+    });
+  }
+
+  /**
+   * find event by id
+   *
+   * @async
+   * @param {User} user
+   * @returns {Promise<EventRequest[]>}
+   */
+  async requestList(user: User): Promise<EventRequest[]> {
+    const requests = await this.eventRequestRepository.findAll({
+      where: {
+        status: RequestStatus.PENDING,
+        event: {
+          createdBy: {
+            id: user.id,
+          },
+        },
+      },
+    });
+    return requests;
+  }
+
+  /**
+   * Accept/Reject Join Request
+   *
+   * @async
+   * @param {User} owner
+   * @param {RequestDecisionDto} data
+   * @returns {Promise<void>}
+   */
+  async acceptOrRejectJoinRequest(
+    owner: User,
+    data: RequestDecisionDto,
+  ): Promise<string> {
+    const { requestId, accept } = data;
+    const request = await this.eventRequestRepository.findByIdOrFail(requestId);
+    const { event, user } = request;
+    const eventData = await this.eventRepository.findById(event.id, [
+      'createdBy',
+    ]);
+
+    // check the event belongs to the user
+    if (eventData.createdBy.id !== owner.id) {
+      throw new ForbiddenException(AppStrings.FORBIDDEN_RESOURCE);
+    }
+
+    const status = accept ? RequestStatus.ACCEPTED : RequestStatus.REJECTED;
+    await this.eventRequestRepository.update(requestId, {
+      status,
+    });
+
+    // Notify the requester via the Email Notification Service.
+    this.notificationService.emit(SEND_JOIN_REQUEST_RESPONSE, {
+      eventTitle: event.title,
+      name: user.fullName,
+      email: user.email,
+      status,
+    });
+
+    return AppStrings.REQUEST_ACTION(status);
   }
 }

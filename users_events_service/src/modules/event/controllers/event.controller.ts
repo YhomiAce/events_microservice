@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { EventService } from '../services';
 import {
   ApiBadRequestResponse,
@@ -6,12 +14,13 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AccessTokenGuard } from 'src/modules/auth/guards';
 import { CurrentUser } from 'src/common/decorators';
 import { User } from 'src/entities';
 import { SuccessResponse } from 'src/common/responses';
-import { CreateEventDto } from '../dtos';
+import { CreateEventDto, EventRequestDto, RequestDecisionDto } from '../dtos';
 import { AppStrings } from 'src/common/messages/app.strings';
 import { EventQueryDto } from '../dtos';
 
@@ -22,17 +31,20 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   /**
-   * Update user
+   * Create Event
    *
    * @async
    * @param {User} user
-   * @param {UpdateUserDto} updateUserDto
-   * @returns {Promise<UserResponse>}
+   * @param {CreateEventDto} createEventDto
+   * @returns {Promise<SuccessResponse>}
    */
   @ApiOperation({
     summary: 'Create Event',
   })
   @ApiOkResponse({ type: SuccessResponse })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorize',
+  })
   @ApiBadRequestResponse({
     description: 'Bad Request: Validation error',
   })
@@ -94,6 +106,85 @@ export class EventController {
   async findOne(@Param('id') id: string): Promise<SuccessResponse> {
     return {
       data: await this.eventService.findOne(id),
+    };
+  }
+
+  /**
+   * Send Request to Join Event
+   *
+   * @async
+   * @param {User} user
+   * @param {EventRequestDto} eventRequestDto
+   * @returns {Promise<SuccessResponse>}
+   */
+  @ApiOperation({
+    summary: 'Request to Join Event',
+  })
+  @ApiOkResponse({ type: SuccessResponse })
+  @ApiBadRequestResponse({
+    description: 'Bad Request: Validation error',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized',
+  })
+  @UseGuards(AccessTokenGuard)
+  @Post('requests/join')
+  async joinEventRequest(
+    @CurrentUser() user: User,
+    @Body() eventRequestDto: EventRequestDto,
+  ): Promise<SuccessResponse> {
+    return {
+      message: AppStrings.JOIN_EVENT_REQUEST,
+      data: await this.eventService.joinEventRequest(user, eventRequestDto),
+    };
+  }
+
+  /**
+   * Find All Event Request
+   *
+   * @async
+   * @param {User} user
+   * @returns {Promise<SuccessResponse>}
+   */
+  @ApiOperation({ summary: 'Find All Event Request' })
+  @ApiOkResponse({ type: SuccessResponse })
+  @UseGuards(AccessTokenGuard)
+  @Get('requests/list')
+  async eventRequests(@CurrentUser() user: User): Promise<SuccessResponse> {
+    return {
+      data: await this.eventService.requestList(user),
+    };
+  }
+
+  /**
+   * Accept/Reject Join Request
+   *
+   * @async
+   * @param {User} user
+   * @param {RequestDecisionDto} requestDecisionDto
+   * @returns {Promise<SuccessResponse>}
+   */
+  @ApiOperation({
+    summary: 'Accept/Reject Join Request',
+  })
+  @ApiOkResponse({ type: SuccessResponse })
+  @ApiBadRequestResponse({
+    description: 'Bad Request: Validation error',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized',
+  })
+  @UseGuards(AccessTokenGuard)
+  @Post('requests/action')
+  async requestDecision(
+    @CurrentUser() user: User,
+    @Body() requestDecisionDto: RequestDecisionDto,
+  ): Promise<SuccessResponse> {
+    return {
+      message: await this.eventService.acceptOrRejectJoinRequest(
+        user,
+        requestDecisionDto,
+      ),
     };
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { MailSendService } from './mail-service';
-import { NotifyEmailDto } from './dtos';
+import { NotifyEmailDto, RequestDecisionNotificationDto } from './dtos';
 import { WelcomeEmailDto } from './dtos/welcome-email.dto';
 
 @Injectable()
@@ -16,7 +16,6 @@ export class NotificationsService implements MailSendService {
    * @returns {Promise<void>}
    */
   async welcomeNotification(payload: WelcomeEmailDto): Promise<void> {
-    console.log("🚀 ~ NotificationsService ~ welcomeNotification ~ payload:", payload)
     const { name, toEmail } = payload;
     try {
       await this.mailerService.sendMail({
@@ -39,15 +38,16 @@ export class NotificationsService implements MailSendService {
    * @returns {Promise<void>}
    */
   async joinEventRequest(payload: NotifyEmailDto): Promise<void> {
-    const { eventTitle, requesterName, toEmail } = payload;
+    const { eventTitle, requesterName, email, name } = payload;
     this.logger.log("MICROSERVICE REQUEST", payload)
     try {
       await this.mailerService.sendMail({
-        to: toEmail,
-        subject: 'Welcome to Waseet App! Confirm your Email',
-        template: './confirmation', // `.hbs` extension is appended automatically
+        to: email,
+        subject: `Request to join ${eventTitle}`,
+        template: './event-request',
         context: {
-          name: requesterName,
+          name,
+          requesterName,
           event: eventTitle,
         },
       });
@@ -63,16 +63,17 @@ export class NotificationsService implements MailSendService {
    * @param {NotifyEmailDto} payload
    * @returns {Promise<void>}
    */
-  async eventRequestResponse(payload: NotifyEmailDto): Promise<void> {
-    const { eventTitle, requesterName, toEmail } = payload;
+  async eventRequestResponse(payload: RequestDecisionNotificationDto): Promise<void> {
+    const { eventTitle, status, email, name } = payload;
     try {
       await this.mailerService.sendMail({
-        to: toEmail,
-        subject: 'Welcome to Waseet App! Confirm your Email',
-        template: './confirmation', // `.hbs` extension is appended automatically
+        to: email,
+        subject: 'Event Request Reply',
+        template: './event-reply',
         context: {
-          name: requesterName,
+          name,
           event: eventTitle,
+          status
         },
       });
       this.logger.log('E-Mail sent Successfully');

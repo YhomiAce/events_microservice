@@ -1,16 +1,17 @@
 import { Module } from '@nestjs/common';
 import { EventController } from './controllers';
 import { EventService } from './services';
-import { EventRepository } from './repository';
+import { EventRepository, EventRequestRepository } from './repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEntity } from 'src/entities';
 import { ConfigService } from '@nestjs/config';
-import {ClientsModule, Transport} from "@nestjs/microservices"
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
+import { EventRequest } from 'src/entities/event-request.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([EventEntity]),
+    TypeOrmModule.forFeature([EventEntity, EventRequest]),
     ClientsModule.registerAsync([
       {
         name: NOTIFICATIONS_SERVICE,
@@ -26,6 +27,6 @@ import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
     ]),
   ],
   controllers: [EventController],
-  providers: [EventService, EventRepository],
+  providers: [EventService, EventRepository, EventRequestRepository],
 })
 export class EventModule {}
