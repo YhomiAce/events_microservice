@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { EventRepository } from '../repository';
 import { CreateEventDto } from '../dtos';
 import { EventEntity, User } from 'src/entities';
@@ -12,10 +12,16 @@ import {
 import { EventQueryDto } from '../dtos/list-event.dto';
 import { Pagination } from 'src/common/utils/pagination';
 import { PaginatedEventListResponse } from 'src/common/responses/event-list.response';
+import { ClientProxy } from '@nestjs/microservices';
+import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
 
 @Injectable()
 export class EventService {
-  constructor(private readonly eventRepository: EventRepository) {}
+  constructor(
+    private readonly eventRepository: EventRepository,
+    @Inject(NOTIFICATIONS_SERVICE)
+    private readonly notificationService: ClientProxy,
+  ) {}
 
   /**
    * Create Event
@@ -37,6 +43,11 @@ export class EventService {
       createdBy: user,
     };
     const event = await this.eventRepository.create(payload);
+    this.notificationService.emit('SEND_JOIN_REQUEST', {
+      eventTitle: event.title,
+      // requesterName: "Yhomi Ace",
+      toEmail: "kareemyomi91@gmail.com",
+    });
     return event;
   }
 
@@ -62,7 +73,7 @@ export class EventService {
    * @returns {Promise<EventEntity>}
    */
   async findOne(id: string): Promise<EventEntity> {
-    return await this.eventRepository.findByIdOrFail(id, ["createdBy"]);
+    return await this.eventRepository.findByIdOrFail(id, ['createdBy']);
   }
 
   /**
@@ -86,7 +97,7 @@ export class EventService {
       where,
       take: pageSize,
       skip: skip * pageSize,
-      relations: ["createdBy"]
+      relations: ['createdBy'],
     });
     const total = await this.eventRepository.count({ where });
     return new Pagination(results, query?.page, query?.pageSize).paginate(

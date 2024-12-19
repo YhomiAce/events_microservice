@@ -17,6 +17,9 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthJwtInterface, JWTPayload } from 'src/common/interfaces';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
+import { ClientProxy } from '@nestjs/microservices';
+import { SEND_WELCOME_EMAIL } from 'src/config/events';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +30,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    @Inject(NOTIFICATIONS_SERVICE)
+    private readonly notificationService: ClientProxy,
   ) {}
 
   /**
@@ -47,6 +52,11 @@ export class AuthService {
         ...inputData,
       };
       const result = await this.userRepository.create(data);
+      // send welcome email to notification service
+      this.notificationService.emit(SEND_WELCOME_EMAIL, {
+        toEmail: result.email,
+        name: result.fullName,
+      });
       return result;
     } catch (error) {
       this.logger.error(error);
@@ -135,7 +145,7 @@ export class AuthService {
     };
   }
 
-    /**
+  /**
    * Update user refresh token
    *
    * @async
@@ -143,28 +153,26 @@ export class AuthService {
    * @param {string} refreshToken
    * @returns {*}
    */
-    async updateRefreshToken(
-      userId: string,
-      refreshToken: string,
-    ): Promise<void> {
-      const hashedRefreshToken = await bcrypt.hash(
-        refreshToken,
-        await bcrypt.genSalt(),
-      );
-      const days = this.configService.get<string>(
-        "JWT_REFRESH_TTL",
-      );
-      const daysArr = days.split("d");
+  async updateRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<void> {
+    const hashedRefreshToken = await bcrypt.hash(
+      refreshToken,
+      await bcrypt.genSalt(),
+    );
+    const days = this.configService.get<string>('JWT_REFRESH_TTL');
+    const daysArr = days.split('d');
 
-      // convert to milliseconds
-      const ttlInMilliseconds =  Number(daysArr[0]) * 86400 * 1000;
-  
-      await this.cacheManager.set(
-        `refresh-${userId}`,
-        hashedRefreshToken,
-        ttlInMilliseconds,
-      );
-    }
+    // convert to milliseconds
+    const ttlInMilliseconds = Number(daysArr[0]) * 86400 * 1000;
+
+    await this.cacheManager.set(
+      `refresh-${userId}`,
+      hashedRefreshToken,
+      ttlInMilliseconds,
+    );
+  }
 
   /**
    * Refresh token
@@ -203,5 +211,4 @@ export class AuthService {
       throw error;
     }
   }
-
 }

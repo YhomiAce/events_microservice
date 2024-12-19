@@ -7,6 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AccessTokenStrategy, RefreshTokenStrategy } from './strategies';
 import AppCacheModule from 'src/config/cache';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
 
 @Module({
   imports: [
@@ -22,7 +24,20 @@ import AppCacheModule from 'src/config/cache';
       }),
       inject: [ConfigService],
     }),
-    AppCacheModule
+    AppCacheModule,
+    ClientsModule.registerAsync([
+      {
+        name: NOTIFICATIONS_SERVICE,
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get('NOTIFICATION_HOST'),
+            port: configService.get('NOTIFICATION_PORT'),
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
   ],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
