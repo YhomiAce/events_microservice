@@ -7,6 +7,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { EventModule } from './modules/event/event.module';
 import configuration from './config/configuration';
 import AppCacheModule from './config/cache';
+import { LoggerModule } from './common/logger/logger.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import AppCacheModule from './config/cache';
       inject: [ConfigService],
     }),
     AppCacheModule,
+    LoggerModule,
     UserModule,
     AuthModule,
     EventModule,

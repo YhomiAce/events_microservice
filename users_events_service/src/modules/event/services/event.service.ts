@@ -49,11 +49,6 @@ export class EventService {
       createdBy: user,
     };
     const event = await this.eventRepository.create(payload);
-    this.notificationService.emit('SEND_JOIN_REQUEST', {
-      eventTitle: event.title,
-      // requesterName: "Yhomi Ace",
-      toEmail: 'kareemyomi91@gmail.com',
-    });
     return event;
   }
 
@@ -136,6 +131,8 @@ export class EventService {
     });
     if (requestExist) {
       throw new BadRequestException(AppStrings.REQUEST_EXIST);
+    }else if(user.id === event.createdBy.id){
+      throw new BadRequestException(AppStrings.REQUEST_FORBIDDEN);
     }
     await this.eventRequestRepository.create({
       event,

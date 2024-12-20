@@ -78,7 +78,7 @@ export class NotificationsService implements MailSendService {
       });
       this.logger.log('E-Mail sent Successfully');
     } catch (error) {
-      this.logger.debug(error);
+      this.logger.error(error);
     }
   }
 }

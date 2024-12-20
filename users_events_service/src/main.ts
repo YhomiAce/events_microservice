@@ -4,6 +4,7 @@ import { ClassSerializerInterceptor, ValidationPipe, VersioningType } from '@nes
 import { ResponseInterceptor } from './config/interceptors';
 import { DBExceptionFilter, HttpExceptionFilter } from './config/exceptions';
 import { initSwagger } from './docs/swagger';
+import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,11 +26,12 @@ async function bootstrap() {
       },
     }),
   );
-
+  app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api');
   app.useGlobalInterceptors(
     new ResponseInterceptor(),
     new ClassSerializerInterceptor(app.get(Reflector)),
+    new LoggerErrorInterceptor()
   );
   app.useGlobalFilters(new HttpExceptionFilter(), new DBExceptionFilter());
   initSwagger(app);

@@ -12,6 +12,7 @@ export const AppStrings = {
   EVENT_CREATED: 'Event created successfully',
   JOIN_EVENT_REQUEST: 'Request sent successfully',
   REQUEST_EXIST: 'You already have a Request for this Event',
+  REQUEST_FORBIDDEN: "You can't request to join your own Event",
   FORBIDDEN_RESOURCE: 'Forbidden Resource',
   REQUEST_ACTION: (action: string) => `Event request ${action}`,
 };

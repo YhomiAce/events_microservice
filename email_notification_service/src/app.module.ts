@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { NotificationsModule } from './modules/notification/notifications.module';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
+import { LoggerModule } from './common/logger/logger.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import * as Joi from 'joi';
         SMTP_PORT: Joi.number().required(),
       }),
     }),
-    NotificationsModule
+    NotificationsModule,
+    LoggerModule
   ],
 })
 export class AppModule {}
