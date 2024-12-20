@@ -8,7 +8,7 @@ import {
 import BaseEntity from './base.entity';
 import { EventEntity } from './event.entity';
 import { User } from './user.entity';
-import { RequestStatus } from 'src/common/enums';
+import { RequestStatus } from '../common/enums';
 
 @Entity()
 export class EventRequest extends BaseEntity {

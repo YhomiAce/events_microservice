@@ -6,19 +6,19 @@ import {
 } from '@nestjs/common';
 import { EventRepository, EventRequestRepository } from '../repository';
 import { CreateEventDto, EventRequestDto, RequestDecisionDto } from '../dtos';
-import { EventEntity, EventRequest, User } from 'src/entities';
+import { EventEntity, EventRequest, User } from '../../../entities';
 import { DeepPartial, FindOptionsWhere, ILike, MoreThanOrEqual } from 'typeorm';
 import { EventQueryDto } from '../dtos/list-event.dto';
-import { Pagination } from 'src/common/utils/pagination';
-import { PaginatedEventListResponse } from 'src/common/responses/event-list.response';
+import { Pagination } from '../../../common/utils/pagination';
+import { PaginatedEventListResponse } from '../../../common/responses/event-list.response';
 import { ClientProxy } from '@nestjs/microservices';
-import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
-import { AppStrings } from 'src/common/messages/app.strings';
+import { NOTIFICATIONS_SERVICE } from '../../../common/constants/services';
+import { AppStrings } from '../../../common/messages/app.strings';
 import {
   SEND_JOIN_REQUEST,
   SEND_JOIN_REQUEST_RESPONSE,
-} from 'src/config/events';
-import { RequestStatus } from 'src/common/enums';
+} from '../../../config/events';
+import { RequestStatus } from '../../../common/enums';
 
 @Injectable()
 export class EventService {
@@ -42,7 +42,7 @@ export class EventService {
     today.setHours(0, 0, 0, 0);
     // check that the event date is greater than today
     if (new Date(data.date) <= today) {
-      throw new BadRequestException("Event Date can't be in the past or today");
+      throw new BadRequestException(AppStrings.INVALID_EVENT_DATE);
     }
     const payload: DeepPartial<EventEntity> = {
       ...data,

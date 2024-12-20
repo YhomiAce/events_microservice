@@ -14,5 +14,6 @@ export const AppStrings = {
   REQUEST_EXIST: 'You already have a Request for this Event',
   REQUEST_FORBIDDEN: "You can't request to join your own Event",
   FORBIDDEN_RESOURCE: 'Forbidden Resource',
+  INVALID_EVENT_DATE: "Event Date can't be in the past or today",
   REQUEST_ACTION: (action: string) => `Event request ${action}`,
 };

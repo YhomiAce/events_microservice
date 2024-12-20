@@ -11,8 +11,8 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 import { PostgresError } from 'pg-error-enum';
-import BaseEntity from 'src/entities/base.entity';
-import { AppStrings } from 'src/common/messages/app.strings';
+import BaseEntity from '../../../entities/base.entity';
+import { AppStrings } from '../../../common/messages/app.strings';
 
 @Injectable()
 export abstract class EntityRepository<T extends BaseEntity> {
