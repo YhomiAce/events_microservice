@@ -1,15 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventService } from './event.service';
 import { EventRepository, EventRequestRepository } from '../repository';
-import { ClientProxy } from '@nestjs/microservices';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { NOTIFICATIONS_SERVICE } from '../../../common/constants/services';
 import { AppStrings } from '../../../common/messages/app.strings';
 import { RequestStatus } from '../../../common/enums';
 import { User } from '../../../entities';
-import { createEventDto, event, user } from '../../../_mock_/test.mock';
+import { mockCreateEventDto, mockEvent, mockeUser } from '../../../_mock_/test.mock';
 import { ILike, MoreThanOrEqual } from 'typeorm';
-import { PaginatedEventListResponse } from '../../../common/responses/event-list.response';
 import { EventQueryDto } from '../dtos';
 
 // Mock dependencies
@@ -56,22 +54,22 @@ describe('EventService', () => {
 
   describe('create', () => {
     it('should throw an error if the event date is in the past or today', async () => {
-      const data = { ...createEventDto, date: new Date('2024-01-20') };
+      const data = { ...mockCreateEventDto, date: new Date('2024-01-20') };
 
-      await expect(service.create(user, data)).rejects.toThrow(
+      await expect(service.create(mockeUser, data)).rejects.toThrow(
         new BadRequestException(AppStrings.INVALID_EVENT_DATE),
       );
     });
 
     it('should create and return an event', async () => {
-      const createdEvent = { id: '1', ...event, createdBy: user };
+      const createdEvent = { id: '1', ...mockEvent, createdBy: mockeUser };
       mockEventRepository.create.mockResolvedValue(createdEvent);
 
-      const result = await service.create(user, createEventDto);
+      const result = await service.create(mockeUser, mockCreateEventDto);
       expect(result).toEqual(createdEvent);
       expect(mockEventRepository.create).toHaveBeenCalledWith({
-        ...createEventDto,
-        createdBy: user,
+        ...mockCreateEventDto,
+        createdBy: mockeUser,
       });
     });
   });
@@ -85,11 +83,11 @@ describe('EventService', () => {
 
       mockEventRepository.findAll.mockResolvedValue(mockEvents);
 
-      const result = await service.findAllUserEvent(user);
+      const result = await service.findAllUserEvent(mockeUser);
       expect(result).toEqual(mockEvents);
       expect(Array.isArray(result)).toBeTruthy();
       expect(mockEventRepository.findAll).toHaveBeenCalledWith({
-        where: { createdBy: { id: user.id } },
+        where: { createdBy: { id: mockeUser.id } },
       });
     });
   });
@@ -98,10 +96,10 @@ describe('EventService', () => {
     it('should return the event with the given id', async () => {
       const eventId = '1';
 
-      mockEventRepository.findByIdOrFail.mockResolvedValue(event);
+      mockEventRepository.findByIdOrFail.mockResolvedValue(mockEvent);
 
       const result = await service.findOne(eventId);
-      expect(result).toEqual(event);
+      expect(result).toEqual(mockEvent);
       expect(mockEventRepository.findByIdOrFail).toHaveBeenCalledWith(eventId, [
         'createdBy',
       ]);
@@ -156,7 +154,7 @@ describe('EventService', () => {
 
       mockEventRequestRepository.findAll.mockResolvedValue(mockRequests);
 
-      const result = await service.requestList(user);
+      const result = await service.requestList(mockeUser);
       expect(result).toEqual(mockRequests);
       expect(Array.isArray(mockRequests)).toBeTruthy();
       expect(mockEventRequestRepository.findAll).toHaveBeenCalledWith({
@@ -164,7 +162,7 @@ describe('EventService', () => {
           status: RequestStatus.PENDING,
           event: {
             createdBy: {
-              id: user.id,
+              id: mockeUser.id,
             },
           },
         },
@@ -176,10 +174,10 @@ describe('EventService', () => {
     it('should throw an error if the request already exists', async () => {
       const data = { eventId: '1' };
 
-      mockEventRepository.findByIdOrFail.mockResolvedValue(event);
+      mockEventRepository.findByIdOrFail.mockResolvedValue(mockEvent);
       mockEventRequestRepository.findOne.mockResolvedValue({ id: 1 });
 
-      await expect(service.joinEventRequest(user, data)).rejects.toThrow(
+      await expect(service.joinEventRequest(mockeUser, data)).rejects.toThrow(
         new BadRequestException(AppStrings.REQUEST_EXIST),
       );
     });
@@ -187,10 +185,10 @@ describe('EventService', () => {
     it('should throw an error if the user is the event creator', async () => {
       const data = { eventId: '1' };
 
-      mockEventRepository.findByIdOrFail.mockResolvedValue(event);
+      mockEventRepository.findByIdOrFail.mockResolvedValue(mockEvent);
       mockEventRequestRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.joinEventRequest(user, data)).rejects.toThrow(
+      await expect(service.joinEventRequest(mockeUser, data)).rejects.toThrow(
         new BadRequestException(AppStrings.REQUEST_FORBIDDEN),
       );
     });
@@ -198,29 +196,28 @@ describe('EventService', () => {
     it('should create a join request and notify the event creator', async () => {
       const data = { eventId: '1' };
       const requester: User = {
-        ...user,
+        ...mockeUser,
         id: '2',
         email: 'requester@example.com',
         fullName: 'John Doe',
       } as User;
 
-      mockEventRepository.findByIdOrFail.mockResolvedValue(event);
+      mockEventRepository.findByIdOrFail.mockResolvedValue(mockEvent);
       mockEventRequestRepository.findOne.mockResolvedValue(null);
 
       await service.joinEventRequest(requester, data);
-      console.log({ userId: requester.id, creatorId: event.createdBy.id });
       expect(mockEventRequestRepository.create).toHaveBeenCalledWith({
-        event,
+        event: mockEvent,
         user: requester,
       });
 
       expect(mockNotificationService.emit).toHaveBeenCalledWith(
         'SEND_JOIN_REQUEST',
         {
-          eventTitle: event.title,
+          eventTitle: mockEvent.title,
           requesterName: requester.fullName,
-          email: event.createdBy.email,
-          name: event.createdBy.fullName,
+          email: mockEvent.createdBy.email,
+          name: mockEvent.createdBy.fullName,
         },
       );
     });
@@ -240,10 +237,10 @@ describe('EventService', () => {
       };
 
       mockEventRequestRepository.findByIdOrFail.mockResolvedValue(request);
-      mockEventRepository.findById.mockResolvedValue(event);
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
 
       await expect(
-        service.acceptOrRejectJoinRequest({ ...user, id: '2' } as User, data),
+        service.acceptOrRejectJoinRequest({ ...mockeUser, id: '2' } as User, data),
       ).rejects.toThrow(new ForbiddenException(AppStrings.FORBIDDEN_RESOURCE));
     });
 
@@ -251,7 +248,7 @@ describe('EventService', () => {
       const data = { requestId: '1', accept: true };
       const request = {
         id: '1',
-        event,
+        event:mockEvent,
         user: {
           id: '2',
           email: 'requester@example.com',
@@ -260,9 +257,9 @@ describe('EventService', () => {
       };
 
       mockEventRequestRepository.findByIdOrFail.mockResolvedValue(request);
-      mockEventRepository.findById.mockResolvedValue(event);
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
 
-      await service.acceptOrRejectJoinRequest(user, data);
+      await service.acceptOrRejectJoinRequest(mockeUser, data);
 
       expect(mockEventRequestRepository.update).toHaveBeenCalledWith(
         data.requestId,
@@ -274,7 +271,7 @@ describe('EventService', () => {
       expect(mockNotificationService.emit).toHaveBeenCalledWith(
         'SEND_JOIN_REQUEST_RESPONSE',
         {
-          eventTitle: event.title,
+          eventTitle: mockEvent.title,
           name: request.user.fullName,
           email: request.user.email,
           status: RequestStatus.ACCEPTED,
@@ -286,7 +283,7 @@ describe('EventService', () => {
       const data = { requestId: '1', accept: false };
       const request = {
         id: '1',
-        event,
+        event:mockEvent,
         user: {
           id: '2',
           email: 'requester@example.com',
@@ -295,9 +292,9 @@ describe('EventService', () => {
       };
 
       mockEventRequestRepository.findByIdOrFail.mockResolvedValue(request);
-      mockEventRepository.findById.mockResolvedValue(event);
+      mockEventRepository.findById.mockResolvedValue(mockEvent);
 
-      await service.acceptOrRejectJoinRequest(user, data);
+      await service.acceptOrRejectJoinRequest(mockeUser, data);
 
       expect(mockEventRequestRepository.update).toHaveBeenCalledWith(
         data.requestId,
@@ -309,7 +306,7 @@ describe('EventService', () => {
       expect(mockNotificationService.emit).toHaveBeenCalledWith(
         'SEND_JOIN_REQUEST_RESPONSE',
         {
-          eventTitle: event.title,
+          eventTitle: mockEvent.title,
           name: request.user.fullName,
           email: request.user.email,
           status: RequestStatus.REJECTED,

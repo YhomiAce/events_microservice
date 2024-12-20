@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Patch,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -13,7 +12,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { SuccessResponse, UserResponse } from '../../../common/responses';
+import { UserResponse } from '../../../common/responses';
 import { User } from '../../../entities';
 import { AccessTokenGuard } from '../../auth/guards';
 import { CurrentUser } from '../../../common/decorators';
@@ -38,7 +37,7 @@ export class UserController {
   @ApiOkResponse({ type: UserResponse })
   @UseGuards(AccessTokenGuard)
   @Get()
-  refreshTokens(@CurrentUser() user: User): UserResponse {
+  userProfile(@CurrentUser() user: User): UserResponse {
     return {
       data: user,
     };
@@ -61,7 +60,7 @@ export class UserController {
   })
   @UseGuards(AccessTokenGuard)
   @Patch('/profile')
-  async updateUser(
+  async updateUserProfile(
     @CurrentUser() user: User,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserResponse> {

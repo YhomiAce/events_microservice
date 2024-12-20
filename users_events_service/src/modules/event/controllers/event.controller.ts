@@ -16,12 +16,12 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AccessTokenGuard } from 'src/modules/auth/guards';
-import { CurrentUser } from 'src/common/decorators';
-import { User } from 'src/entities';
-import { SuccessResponse } from 'src/common/responses';
+import { AccessTokenGuard } from '../../../modules/auth/guards';
+import { CurrentUser } from '../../../common/decorators';
+import { User } from '../../../entities';
+import { SuccessResponse } from '../../../common/responses';
 import { CreateEventDto, EventRequestDto, RequestDecisionDto } from '../dtos';
-import { AppStrings } from 'src/common/messages/app.strings';
+import { AppStrings } from '../../../common/messages/app.strings';
 import { EventQueryDto } from '../dtos';
 
 @ApiTags('Event')

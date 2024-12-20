@@ -1,29 +1,40 @@
-import { CreateEventDto } from 'src/modules/event/dtos';
+import { CreateEventDto } from '../modules/event/dtos';
 import { EventEntity, User } from '../entities';
+import { RequestStatus } from '../common/enums';
 
-export const user = {
+export const mockeUser = {
   id: '1',
   fullName: 'John Doe',
   email: 'creator@example.com',
   createdAt: new Date(),
   updatedAt: new Date(),
 } as User;
-export const data = { eventId: '1' };
-export const event: EventEntity = {
+
+export const mockEvent: EventEntity = {
   id: '1',
   title: 'Test Event',
   category: 'CyberSecurity',
   description: 'Event description',
   date: new Date(Date.now() + 24 * 60 * 60 * 1000),
   createdBy: {
-    ...user,
+    ...mockeUser,
   } as User,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
-export const createEventDto: CreateEventDto = {
+
+export const mockCreateEventDto: CreateEventDto = {
   title: 'Test Event',
   category: 'CyberSecurity',
   description: 'Event description',
   date: new Date(Date.now() + 24 * 60 * 60 * 1000),
 };
+
+export const mockRequests = [
+  { id: '1', status: RequestStatus.PENDING },
+  { id: '2', status: RequestStatus.PENDING },
+];
+
+export const mockUpdateUserDto = {
+    fullName: "Jane Doe"
+}
