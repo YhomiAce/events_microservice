@@ -1,7 +1,7 @@
 services:
   events:
     build: ./users_events_service
-    command: npm run migration:run && npm run start:dev
+    command: sh -c "npm run migration:run && npm run start:dev"
     env_file:
       - ./users_events_service/.env
     ports:
@@ -41,7 +41,7 @@ services:
     env_file:
       - .env
     ports:
-      - 5433:5432
+      - 5432:5432
     volumes:
       - database_data:/var/lib/postgresql/data
     networks:
@@ -50,7 +50,7 @@ services:
   redis:
     image: redis:6.2-alpine
     ports:
-      - ${REDIS_PORT}:6379
+      - 6379:6379
     restart: always
     networks:
       - internal
