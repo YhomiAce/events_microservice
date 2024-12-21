@@ -1,4 +1,4 @@
-# NestJS Microservices Application
+# NestJS Social Event Microservices Application
 
 This repository contains two NestJS-based microservices designed to demonstrate a scalable and modular architecture. These microservices communicate with each other using RabbitMQ and rely on Docker for containerization, PostgreSQL for database management, and Redis for caching.
 
