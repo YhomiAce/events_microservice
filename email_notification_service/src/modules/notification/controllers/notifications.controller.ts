@@ -1,19 +1,18 @@
 import {
   Controller,
   UseFilters,
-  UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { NotificationsService } from './notifications.service';
-import { EventPattern, Payload, RpcException } from '@nestjs/microservices';
-import { NotifyEmailDto, RequestDecisionNotificationDto } from './dtos';
+import { NotificationsService } from '../services/notifications.service';
+import { EventPattern, Payload } from '@nestjs/microservices';
+import { NotifyEmailDto, RequestDecisionNotificationDto } from '../dtos';
 import {
   SEND_JOIN_REQUEST,
   SEND_JOIN_REQUEST_RESPONSE,
   SEND_WELCOME_EMAIL,
-} from '../common/constants';
-import { MicroserviceRequestFilter } from '../common/exceptions';
-import { WelcomeEmailDto } from './dtos/welcome-email.dto';
+} from '../../common/constants';
+import { MicroserviceRequestFilter } from '../../common/exceptions';
+import { WelcomeEmailDto } from '../dtos/welcome-email.dto';
 
 @Controller()
 export class NotificationsController {

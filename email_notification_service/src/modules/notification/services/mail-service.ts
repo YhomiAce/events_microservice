@@ -1,7 +1,8 @@
-import { NotifyEmailDto, RequestDecisionNotificationDto } from "./dtos";
-import { WelcomeEmailDto } from "./dtos/welcome-email.dto";
-
-
+import {
+  NotifyEmailDto,
+  RequestDecisionNotificationDto,
+  WelcomeEmailDto,
+} from '../dtos';
 
 export interface MailSendService {
   welcomeNotification(payload: WelcomeEmailDto): Promise<void>;

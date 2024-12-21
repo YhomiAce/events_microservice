@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { MailSendService } from './mail-service';
-import { NotifyEmailDto, RequestDecisionNotificationDto } from './dtos';
-import { WelcomeEmailDto } from './dtos/welcome-email.dto';
+import { NotifyEmailDto, RequestDecisionNotificationDto } from '../dtos';
+import { WelcomeEmailDto } from '../dtos/welcome-email.dto';
 
 @Injectable()
 export class NotificationsService implements MailSendService {

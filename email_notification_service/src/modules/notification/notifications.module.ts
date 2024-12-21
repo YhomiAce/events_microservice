@@ -1,15 +1,13 @@
 import { Module } from '@nestjs/common';
-import { NotificationsController } from './notifications.controller';
-import { NotificationsService } from './notifications.service';
+import { NotificationsController } from './controllers';
+import { NotificationsService } from './services';
 import { ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
 
-
 @Module({
   imports: [
-   
     MailerModule.forRootAsync({
       useFactory: (config: ConfigService) => ({
         transport: {

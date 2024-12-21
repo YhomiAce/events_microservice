@@ -13,6 +13,7 @@ import { LoggerModule } from './common/logger/logger.module';
         PORT: Joi.string().required(),
         SMTP_USER: Joi.string().required(),
         SMTP_HOST: Joi.string().required(),
+        MAIL_FROM: Joi.string().required(),
         SMTP_PASSWORD: Joi.string().required(),
         SMTP_PORT: Joi.number().required(),
       }),
