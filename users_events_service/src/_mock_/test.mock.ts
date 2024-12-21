@@ -36,5 +36,26 @@ export const mockRequests = [
 ];
 
 export const mockUpdateUserDto = {
-    fullName: "Jane Doe"
-}
+  fullName: 'Jane Doe',
+};
+
+export const mockNewUser = {
+  fullName: 'John Doe',
+  email: 'creator@example.com',
+  password: 'Test@1234',
+};
+
+export const mockLoginUser = {
+  email: 'creator@example.com',
+  password: 'Test@1234',
+};
+
+export const mockTokens = {
+  accessToken: 'new-jwt-token',
+  refreshToken: 'new-refresh-token',
+};
+
+export const mockLoginResponse = {
+  tokens: mockTokens,
+  user: { ...mockeUser },
+};

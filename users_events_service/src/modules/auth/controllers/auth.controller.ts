@@ -20,8 +20,8 @@ import {
   JwtTokenWithUserResponse,
   RefreshTokenResponse,
   SuccessResponse,
-} from 'src/common/responses';
-import { AppStrings } from 'src/common/messages/app.strings';
+} from '../../../common/responses';
+import { AppStrings } from '../../../common/messages/app.strings';
 import { RefreshTokenGuard } from '../guards';
 
 @ApiTags('Auth')

@@ -7,19 +7,19 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersRepository } from '../../user/repository';
-import type { User } from 'src/entities';
+import type { User } from '../../../entities';
 import { LoginDto, SignUpDto } from '../dtos';
-import { AppStrings } from 'src/common/messages/app.strings';
-import { JwtTokenWithUserResponse } from 'src/common/responses';
+import { AppStrings } from '../../../common/messages/app.strings';
+import { JwtTokenWithUserResponse } from '../../../common/responses';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { AuthJwtInterface, JWTPayload } from 'src/common/interfaces';
+import { AuthJwtInterface, JWTPayload } from '../../../common/interfaces';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
+import { NOTIFICATIONS_SERVICE } from '../../../common/constants/services';
 import { ClientProxy } from '@nestjs/microservices';
-import { SEND_WELCOME_EMAIL } from 'src/config/events';
+import { SEND_WELCOME_EMAIL } from '../../../config/events';
 
 @Injectable()
 export class AuthService {
