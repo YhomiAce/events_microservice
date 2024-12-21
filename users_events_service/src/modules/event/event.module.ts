@@ -4,25 +4,24 @@ import { EventService } from './services';
 import { EventRepository, EventRequestRepository } from './repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEntity } from 'src/entities';
-import { ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
+import {
+  NOTIFICATIONS_SERVICE,
+  NOTIFICATIONS_SERVICE_QUEUE,
+} from 'src/common/constants/services';
 import { EventRequest } from 'src/entities/event-request.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([EventEntity, EventRequest]),
-    ClientsModule.registerAsync([
+    ClientsModule.register([
       {
         name: NOTIFICATIONS_SERVICE,
-        useFactory: (configService: ConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: configService.get('NOTIFICATION_HOST'),
-            port: configService.get('NOTIFICATION_PORT'),
-          },
-        }),
-        inject: [ConfigService],
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL],
+          queue: NOTIFICATIONS_SERVICE_QUEUE,
+        },
       },
     ]),
   ],
