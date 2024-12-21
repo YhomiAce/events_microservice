@@ -8,7 +8,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AccessTokenStrategy, RefreshTokenStrategy } from './strategies';
 import AppCacheModule from 'src/config/cache';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
+import {
+  NOTIFICATIONS_SERVICE,
+  NOTIFICATIONS_SERVICE_QUEUE,
+} from 'src/common/constants/services';
 
 @Module({
   imports: [
@@ -25,17 +28,14 @@ import { NOTIFICATIONS_SERVICE } from 'src/common/constants/services';
       inject: [ConfigService],
     }),
     AppCacheModule,
-    ClientsModule.registerAsync([
+    ClientsModule.register([
       {
         name: NOTIFICATIONS_SERVICE,
-        useFactory: (configService: ConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: configService.get('NOTIFICATION_HOST'),
-            port: configService.get('NOTIFICATION_PORT'),
-          },
-        }),
-        inject: [ConfigService],
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL],
+          queue: NOTIFICATIONS_SERVICE_QUEUE,
+        },
       },
     ]),
   ],

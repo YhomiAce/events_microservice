@@ -1,15 +1,15 @@
 services:
-
   events:
     build: ./users_events_service
-    command: npm run start:dev
+    command: npm run migration:run && npm run start:dev
     env_file:
       - ./users_events_service/.env
     ports:
-      - '3000:3000'
+      - "3000:3000"
     depends_on:
       - postgres
       - redis
+      - rabbitmq
     volumes:
       - ./users_events_service:/usr/src/app
       - ./users_events_service/node_modules:/usr/src/app/node_modules
@@ -22,7 +22,9 @@ services:
     env_file:
       - ./email_notification_service/.env
     ports:
-      - '3001:3001'
+      - "3001:3001"
+    depends_on:
+      - rabbitmq
     volumes:
       - ./email_notification_service:/usr/src/app
       - ./email_notification_service/node_modules:/usr/src/app/node_modules
@@ -52,8 +54,24 @@ services:
     restart: always
     networks:
       - internal
-    volumes:  
-      - cache_data:/data  
+    volumes:
+      - cache_data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+      - RABBITMQ_MANAGEMENT=true
+    networks:
+      - internal
 
 networks:
   internal:
@@ -62,3 +80,4 @@ networks:
 volumes:
   database_data:
   cache_data:
+  rabbitmq_data:

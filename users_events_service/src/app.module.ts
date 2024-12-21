@@ -16,6 +16,9 @@ import { LoggerModule } from './common/logger/logger.module';
       envFilePath: '',
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(),
+        RABBITMQ_URL: Joi.string().required(),
+        REDIS_HOST: Joi.string().required(),
+        REDIS_PORT: Joi.number().required(),
       }),
       load: configuration,
     }),
