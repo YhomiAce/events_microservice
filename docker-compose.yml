@@ -1,7 +1,7 @@
 services:
   events:
     build: ./users_events_service
-    command: npm run start:dev
+    command: npm run migration:run && npm run start:dev
     env_file:
       - ./users_events_service/.env
     ports:
@@ -9,6 +9,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - rabbitmq
     volumes:
       - ./users_events_service:/usr/src/app
       - ./users_events_service/node_modules:/usr/src/app/node_modules
@@ -22,6 +23,8 @@ services:
       - ./email_notification_service/.env
     ports:
       - "3001:3001"
+    depends_on:
+      - rabbitmq
     volumes:
       - ./email_notification_service:/usr/src/app
       - ./email_notification_service/node_modules:/usr/src/app/node_modules
